@@ -1,0 +1,25 @@
+Assessing LLMs for Zero-shot Abstractive Summarization: https://arxiv.org/pdf/2406.03993 
+Mistral RP: https://arxiv.org/pdf/2310.06825
+Comprehensive Benchmarking of Top LLMs: Qwen2, Llama, Mistral, Gemma: https://www.inferless.com/learn/exploring-llms-speed-benchmarks-independent-analysis---part-3
+Is Llama 3 Really Better Than Mistral?: https://mlexplained.blog/2024/04/19/is-llama-3-really-better-than-mistral/
+Llama vs. Mistral: Which Performs Better and Why?: https://www.autonomous.ai/ourblog/llama-vs-mistral-which-performs-better
+Beyond ChatGPT: Enhancing Software Quality Assurance Tasks with Diverse LLMs and Validation Techniques: https://arxiv.org/abs/2409.01001
+Mistral vs Llama: benchmark on your own data: https://www.promptfoo.dev/docs/guides/mistral-vs-llama/ 
+Mistral vs Llama 3: Which One Should You Choose?: https://blogs.novita.ai/mistral-vs-llama-3-which-one-should-you-choose/
+Comparative Analysis of Top Large Language Models: https://www.baeldung.com/cs/top-llm-comparative-analysis
+Exploring LLMs Speed Benchmark Independent Analysis:https://www.inferless.com/learn/exploring-llms-speed-benchmarks-independent-analysis
+Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution: https://arxiv.org/pdf/2409.12191 
+QWEN2 TECHNICAL REPORT: https://arxiv.org/pdf/2407.10671
+Qwen2-VL-To See the World More Clearly:https://qwenlm.github.io/blog/qwen2-vl/ 
+Qwen2-VL-7B-Instruct: https://qwen2vl.com/qwen2-vl-7b-instruct/
+Qwen2.5-Coder Technical Report: https://arxiv.org/pdf/2409.12186
+Qwen2.5-Coder: Code More, Learn More!: https://qwenlm.github.io/blog/qwen2.5-coder/
+Code Llama: Open Foundation Models for Code: https://arxiv.org/pdf/2308.12950
+Code Llama, an AI Tool for Coding: https://about.fb.com/news/2023/08/code-llama-ai-for-coding/
+Code Llama: Meta’s Answer to Generative AI Code-Writing: https://deepgram.com/learn/code-llama-explained
+PaliGemma: A versatile 3B VLM for transfer:https://arxiv.org/pdf/2407.07726
+PaliGemma – Google's Cutting-Edge Open Vision Language Model:https://huggingface.co/blog/paligemma
+PaliGemma: An Open Multimodal Model by Google: https://blog.roboflow.com/paligemma-multimodal-vision/
+Gemma: Open Models Based on Gemini Research and Technology: https://arxiv.org/pdf/2403.08295
+Gemma explained: An overview of Gemma model family architectures: https://developers.googleblog.com/en/gemma-explained-overview-gemma-model-family-architectures/
+Exploring Google’s Gemma: The Next-Gen Language Models: https://google-gemma.com/exploring-googles-gemma-the-next-gen-language-models/
