@@ -1,5 +1,3 @@
-"Review this process for quality issues based on these examples:
-
-Example 1: 'Step 4 requires data from Step 2, but the process description omits this dependency.' → Issue: Missing dependency in process.
-Example 2: 'The final step doesn't account for error handling.' → Issue: Lack of error handling.
-Now evaluate this process: '[insert process steps]'
+"Check the following items against the provided checklist. Indicate which items meet the criteria and which do not:
+Items: '[insert items]'
+Checklist: '[insert checklist criteria]'"
