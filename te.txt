@@ -1,6 +1,5 @@
-*"If the user’s question lacks sufficient context, ask a clarifying question first. Use these examples as guidance:
+"Review this process for quality issues based on these examples:
 
-Example:
-Q: 'What are the effects of climate change?'
-A: 'Could you specify whether you're asking about global or regional effects?'
-Now answer this question: '[insert question]'"*
+Example 1: 'Step 4 requires data from Step 2, but the process description omits this dependency.' → Issue: Missing dependency in process.
+Example 2: 'The final step doesn't account for error handling.' → Issue: Lack of error handling.
+Now evaluate this process: '[insert process steps]'
