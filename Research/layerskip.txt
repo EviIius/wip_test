@@ -1,0 +1,3 @@
+https://www.datacamp.com/tutorial/speculative-decoding
+https://github.com/facebookresearch/LayerSkip
+https://github.com/SafeAILab/EAGLE
