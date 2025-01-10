@@ -1,11 +1,6 @@
-Answering with Examples
-Prompt:
-*"Answer questions using the examples below as guidance:
+*"If the user’s question lacks sufficient context, ask a clarifying question first. Use these examples as guidance:
 
-Example 1:
-Q: 'What is the capital of France?'
-A: 'The capital of France is Paris.'
-Example 2:
-Q: 'How does photosynthesis work?'
-A: 'Photosynthesis is the process by which plants convert sunlight into energy using chlorophyll.'
+Example:
+Q: 'What are the effects of climate change?'
+A: 'Could you specify whether you're asking about global or regional effects?'
 Now answer this question: '[insert question]'"*
