@@ -1,3 +1,9 @@
-"Check the following items against the provided checklist. Indicate which items meet the criteria and which do not:
-Items: '[insert items]'
-Checklist: '[insert checklist criteria]'"
+Example 1:
+Input: "He is always late for meetings."
+Output: "He frequently arrives late to meetings."
+
+Example 2:
+Input: "The city was destroyed by a powerful hurricane."
+Output: "A devastating hurricane demolished the city."
+
+Make the following sentence more descriptive while paraphrasing it: [INPUT].
