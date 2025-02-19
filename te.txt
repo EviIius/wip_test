@@ -1,9 +1,5 @@
-Example 1:
-Input: "He is always late for meetings."
-Output: "He frequently arrives late to meetings."
-
-Example 2:
-Input: "The city was destroyed by a powerful hurricane."
-Output: "A devastating hurricane demolished the city."
-
-Make the following sentence more descriptive while paraphrasing it: [INPUT].
+QAQC relies on guidelines and internal documents to ensure accuracy.
+Without clear documentation, results may be inconsistent across different formats and use cases.
+System prompts help but may miss key details, especially for model validation.
+QAQC works best with human review or retrieval-augmented generation (RAG).
+Even a simple file upload can improve accuracy and performance.
