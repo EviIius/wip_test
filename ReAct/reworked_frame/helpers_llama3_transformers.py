@@ -9,45 +9,65 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm.notebook import tqdm
 import pickle
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import torch
 
 # Load the local LLaMA model and tokenizer
 MODEL_NAME = "path/to/local/llama-model"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3b")
 model.eval()
 
 
 def get_embedding(text: str) -> List[float]:
-    """Get embeddings from LLaMA"""
+    """Get embeddings using LLaMA 3"""
     inputs = tokenizer(text, return_tensors="pt")
     with torch.no_grad():
         outputs = model(**inputs)
-        embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+        # Get the last layer hidden states
+        hidden_states = outputs.hidden_states[-1]
+        # Get the embedding for the [CLS] token or mean pooling
+        embedding = hidden_states.mean(dim=1).squeeze().tolist()
     return embedding
 
 
 def get_embeddings_batch(texts: List[str], batch_size: int = 50) -> List[List[float]]:
-    """Get embeddings for multiple texts with progress bar"""
+    """Get embeddings for multiple texts using LLaMA 3 with progress bar"""
     embeddings = []
+    
+    # Calculate total number of batches for progress bar
     num_batches = (len(texts) + batch_size - 1) // batch_size
+    
     with tqdm(total=len(texts), desc="Generating embeddings") as pbar:
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
-            batch_embeddings = [get_embedding(text) for text in batch]
+            batch_embeddings = []
+            for text in batch:
+                inputs = tokenizer(text, return_tensors="pt")
+                with torch.no_grad():
+                    outputs = model(**inputs)
+                    # Get the last hidden state for the [CLS] token
+                    embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
+                    batch_embeddings.append(embedding)
             embeddings.extend(batch_embeddings)
             pbar.update(len(batch))
     return embeddings
 
 
-def get_completion(messages: str) -> Union[str, Dict]:
-    """Get completion from LLaMA"""
-    inputs = tokenizer(messages, return_tensors="pt")
-    with torch.no_grad():
-        outputs = model.generate(**inputs, max_length=100)
-        completion = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return completion
+
+# Load LLaMA 3 model for text generation
+generation_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3b")
+generation_pipeline = pipeline("text-generation", model=generation_model, tokenizer=tokenizer)
+
+def get_completion(
+    messages: str,
+    model: str = "llama-3b"
+) -> Union[str, Dict]:
+    """Get completion using LLaMA 3"""
+    response = generation_pipeline(messages, max_length=100, do_sample=True, temperature=0.7)
+    content = response[0]['generated_text']
+    return content
+
 
 
 @dataclass
@@ -153,60 +173,41 @@ class DocumentProcessor:
 
 class VectorStore:
     def __init__(self, persist_directory: str = "rag_index"):
-        self.index = None
+        self.embeddings = []
         self.documents = []
         self.persist_directory = persist_directory
         os.makedirs(persist_directory, exist_ok=True)
     
-    def _get_index_path(self) -> str:
-        return os.path.join(self.persist_directory, "faiss.index")
-    
-    def _get_documents_path(self) -> str:
-        return os.path.join(self.persist_directory, "documents.pkl")
-
-    def load_local_index(self) -> bool:
-        """
-        Load index and documents from disk if they exist
-        Returns:
-            bool: True if loaded successfully, False otherwise
-        """
-        index_path = self._get_index_path()
-        documents_path = self._get_documents_path()
-        
-        try:
-            if os.path.exists(index_path) and os.path.exists(documents_path):
-                self.index = faiss.read_index(index_path)
-                with open(documents_path, 'rb') as f:
-                    self.documents = pickle.load(f)
-                print(f"Loaded existing index with {len(self.documents)} documents")
-                return True
-        except Exception as e:
-            print(f"Error loading index: {e}")
-            self.index = None
-            self.documents = []
-        
-        return False
-
     def save_local_index(self):
-        """Save index and documents to disk"""
-        if self.index is None or not self.documents:
+        """Save index and documents to disk using pickle"""
+        if not self.embeddings or not self.documents:
             return
         
         try:
-            # Save FAISS index
-            faiss.write_index(self.index, self._get_index_path())
-            
-            # Save documents
-            with open(self._get_documents_path(), 'wb') as f:
+            np.save(os.path.join(self.persist_directory, "embeddings.npy"), self.embeddings)
+            with open(os.path.join(self.persist_directory, 'documents.pkl'), 'wb') as f:
                 pickle.dump(self.documents, f)
-            
             print(f"Saved index with {len(self.documents)} documents")
         except Exception as e:
             print(f"Error saving index: {e}")
 
+    def load_local_index(self) -> bool:
+        """Load index and documents from disk"""
+        try:
+            self.embeddings = np.load(os.path.join(self.persist_directory, "embeddings.npy")).tolist()
+            with open(os.path.join(self.persist_directory, 'documents.pkl'), 'rb') as f:
+                self.documents = pickle.load(f)
+            print(f"Loaded existing index with {len(self.documents)} documents")
+            return True
+        except Exception as e:
+            print(f"Error loading index: {e}")
+            self.embeddings = []
+            self.documents = []
+            return False
+
     def create_index(self, documents: List[Document], force_recreate: bool = False):
         """
-        Create or load FAISS index
+        Create or load index
         Args:
             documents: List of documents to index
             force_recreate: If True, recreate index even if it exists
@@ -222,11 +223,7 @@ class VectorStore:
         # Get embeddings
         contents = [doc.content for doc in documents]
         embeddings = get_embeddings_batch(contents)
-        
-        # Create and populate index
-        embedding_dim = len(embeddings[0])
-        self.index = faiss.IndexFlatL2(embedding_dim)
-        self.index.add(np.array(embeddings).astype('float32'))
+        self.embeddings = np.array(embeddings)
         
         # Save to disk
         self.save_local_index()
@@ -236,18 +233,22 @@ class VectorStore:
         query: str,
         k: int = 3
     ) -> List[Tuple[Document, float]]:
-        """Search for similar documents"""
-        if self.index is None:
+        """Search for similar documents using cosine similarity"""
+        if not self.embeddings:
             raise ValueError("Index not initialized. Call create_index first.")
         
         query_embedding = get_embedding(query)
-        distances, indices = self.index.search(
-            np.array([query_embedding]).astype('float32'),
-            k
+        
+        # Compute cosine similarity
+        query_embedding = np.array(query_embedding)
+        similarities = np.dot(self.embeddings, query_embedding) / (
+            np.linalg.norm(self.embeddings, axis=1) * np.linalg.norm(query_embedding)
         )
         
-        return [(self.documents[i], 1/(1 + distances[0][idx]))
-                for idx, i in enumerate(indices[0])]
+        # Get top-k results
+        top_k_indices = np.argsort(similarities)[-k:][::-1]
+        return [(self.documents[i], similarities[i]) for i in top_k_indices]
+
 
 class HybridSearcher:
     def __init__(self, persist_directory: str = "rag_index"):
