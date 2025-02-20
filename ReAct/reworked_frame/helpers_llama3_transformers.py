@@ -15,7 +15,7 @@ import torch
 # Load the local LLaMA model and tokenizer
 MODEL_NAME = "path/to/local/llama-model"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3b")
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 model.eval()
 
 
@@ -24,10 +24,8 @@ def get_embedding(text: str) -> List[float]:
     inputs = tokenizer(text, return_tensors="pt")
     with torch.no_grad():
         outputs = model(**inputs)
-        # Get the last layer hidden states
-        hidden_states = outputs.hidden_states[-1]
-        # Get the embedding for the [CLS] token or mean pooling
-        embedding = hidden_states.mean(dim=1).squeeze().tolist()
+        # Get the last hidden state for the [CLS] token
+        embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
     return embedding
 
 
