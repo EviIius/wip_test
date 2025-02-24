@@ -11,49 +11,75 @@ from tqdm.notebook import tqdm
 import pickle
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, AutoModel
 import torch
+from torch.cuda.amp import autocast
 
 # Device Configuration
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {DEVICE}")
 
-# Load the local LLaMA model and tokenizer
+# Load the local LLaMA model and tokenizer with FP16 and Gradient Checkpointing
 MODEL_NAME = "path/to/local/llama-model"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModel.from_pretrained(MODEL_NAME, output_hidden_states=True).to(DEVICE)
 model.eval()
 
+# Enable FP16 Mixed Precision
+model.half()  
+
+# Clear CUDA cache to free up memory before starting
+torch.cuda.empty_cache()
+
 def get_embedding(text: str) -> List[float]:
-    """Get embeddings using LLaMA 3 with GPU support"""
-    inputs = tokenizer(text, return_tensors="pt").to(DEVICE)
+    """Get embeddings using LLaMA 3 with GPU support and memory optimization"""
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512).to(DEVICE)
+    
     with torch.no_grad():
-        outputs = model(**inputs)
-        hidden_states = outputs.hidden_states[-1]
-        embedding = hidden_states.mean(dim=1).squeeze().cpu().tolist()
+        with autocast():  # Enable Mixed Precision
+            outputs = model(**inputs)
+            hidden_states = outputs.hidden_states[-1]
+            embedding = hidden_states.mean(dim=1).squeeze().cpu().tolist()
+    
+    # Clean up GPU memory
+    del inputs, outputs, hidden_states
+    torch.cuda.empty_cache()
+    
     return embedding
 
-def get_embeddings_batch(texts: List[str], batch_size: int = 50) -> List[List[float]]:
+def get_embeddings_batch(texts: List[str], batch_size: int = 16) -> List[List[float]]:
     """Get embeddings for multiple texts using LLaMA 3 with GPU support and batch processing"""
     embeddings = []
 
-    # Calculate total number of batches for progress bar
     num_batches = (len(texts) + batch_size - 1) // batch_size
     
     with tqdm(total=len(texts), desc="Generating embeddings") as pbar:
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
-            inputs = tokenizer(batch, return_tensors="pt", padding=True, truncation=True).to(DEVICE)
+            inputs = tokenizer(batch, return_tensors="pt", padding=True, truncation=True, max_length=512).to(DEVICE)
+            
             with torch.no_grad():
-                outputs = model(**inputs)
-                hidden_states = outputs.hidden_states[-1]
-                batch_embeddings = hidden_states.mean(dim=1).cpu().tolist()
-                embeddings.extend(batch_embeddings)
+                with autocast():  # Enable Mixed Precision
+                    outputs = model(**inputs)
+                    hidden_states = outputs.hidden_states[-1]
+                    batch_embeddings = hidden_states.mean(dim=1).cpu().tolist()
+                    embeddings.extend(batch_embeddings)
+            
+            # Clean up GPU memory after each batch
+            del inputs, outputs, hidden_states, batch_embeddings
+            torch.cuda.empty_cache()
+            
             pbar.update(len(batch))
     
     return embeddings
 
 # Load LLaMA 3 model for text generation
 generation_model = AutoModelForCausalLM.from_pretrained(MODEL_NAME).to(DEVICE)
-generation_pipeline = pipeline("text-generation", model=generation_model, tokenizer=tokenizer, device=0 if DEVICE == "cuda" else -1)
+generation_model.half()  # Mixed Precision
+generation_pipeline = pipeline(
+    "text-generation", 
+    model=generation_model, 
+    tokenizer=tokenizer, 
+    device=0 if DEVICE == "cuda" else -1
+)
 
 def get_completion(messages: str) -> Union[str, Dict]:
     """Get completion using LLaMA 3"""
@@ -147,4 +173,3 @@ class DocumentProcessor:
         
         print(f"Final number of chunks: {len(processed_chunks)}")
         return processed_chunks
-
