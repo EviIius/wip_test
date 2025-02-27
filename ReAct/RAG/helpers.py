@@ -9,6 +9,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm.notebook import tqdm
 import logging
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
+import torch
 
 # Logging Configuration
 logging.basicConfig(
@@ -16,49 +18,47 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Qwen Imports
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
-import torch
-
-# Load Configuration
-QWEN_MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
+# LLaMA 2 Model Configuration
+LLAMA_MODEL_NAME = "meta-llama/Llama-2-7b-chat-hf"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load Tokenizer and Model (Updated)
+# Load Tokenizer and Model
 logger.info("Loading tokenizer and models...")
-tokenizer = AutoTokenizer.from_pretrained(QWEN_MODEL_NAME)
+tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL_NAME)
 
-embedding_model = AutoModel.from_pretrained(
-    QWEN_MODEL_NAME,
-    device_map="auto",  # Automatically places the model on the correct device
-    load_in_8bit=True,  # Enables 8-bit quantization
+# Fix: Set pad_token as eos_token
+tokenizer.pad_token = tokenizer.eos_token
+
+# Use AutoModelForCausalLM for both embeddings and text generation
+embedding_model = AutoModelForCausalLM.from_pretrained(
+    LLAMA_MODEL_NAME,
+    device_map="auto", 
+    load_in_8bit=True, 
     torch_dtype=torch.float16,
-    llm_int8_enable_fp32_cpu_offload=True,  # Allow CPU offload for parts that don't fit on GPU
 )
 
 completion_model = AutoModelForCausalLM.from_pretrained(
-    QWEN_MODEL_NAME,
+    LLAMA_MODEL_NAME,
     device_map="auto",
     load_in_8bit=True,
     torch_dtype=torch.float16,
-    llm_int8_enable_fp32_cpu_offload=True,  # Allow CPU offload for parts that don't fit on GPU
 )
 
-logger.info("Quantized model loaded successfully.")
-
+logger.info("LLaMA 2 model loaded successfully.")
 
 # Get Embedding Function (Updated)
 def get_embedding(text: str) -> List[float]:
-    """Get normalized embeddings using local Mistral model"""
+    """Get normalized embeddings using LLaMA 2 model"""
     inputs = tokenizer(text, return_tensors="pt").to(device)
     with torch.no_grad():
         outputs = embedding_model(**inputs, output_hidden_states=True)
-        # Mistral models use the last hidden state for embeddings
-        embedding = outputs.last_hidden_state.mean(dim=1).squeeze()
-        # Normalize the embedding to unit length
+        # Extract embeddings from the last hidden state
+        hidden_states = outputs.hidden_states[-1]  # Last hidden state
+        embedding = hidden_states.mean(dim=1).squeeze()
         embedding = embedding / embedding.norm(p=2)
         embedding = embedding.cpu().numpy().tolist()
     return embedding
+
 
 
 # Get Batch Embeddings
