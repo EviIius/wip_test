@@ -70,37 +70,54 @@ def get_embeddings_batch(texts: List[str], batch_size: int = 50) -> List[List[fl
         embeddings.extend(batch_embeddings)
     return embeddings
 
-def get_completion(messages: str, max_tokens: int = 1000, temperature: float = 0.7, timeout: int = 30) -> str:
+
+def get_completion(
+    messages: str,
+    max_new_tokens: int = 512,
+    temperature: float = 0.7,
+    timeout: int = 30
+) -> str:
     """Get completion with proper attention mask and GPU termination."""
-    input_data = tokenizer(messages, return_tensors="pt", padding=True, truncation=True)
+    # Explicitly set a max_length for tokenization if you want truncation:
+    input_data = tokenizer(
+        messages,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=1024,  # or whatever fits your GPU memory
+    )
     input_ids = input_data.input_ids.to(device)
     attention_mask = input_data.attention_mask.to(device)
-    
+
     with torch.no_grad():
         try:
-            with torch.amp.autocast('cuda'):
+            with torch.amp.autocast("cuda"):
                 output = completion_model.generate(
-                    input_ids,
-                    attention_mask=attention_mask,  # Explicitly set attention mask
-                    max_length=input_ids.shape[1] + max_tokens,
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    max_new_tokens=max_new_tokens,
                     temperature=temperature,
                     do_sample=True,
                     top_k=50,
                     top_p=0.95,
                     pad_token_id=tokenizer.eos_token_id,
-                    num_return_sequences=1
+                    repetition_penalty=1.2,  # helps avoid repeated phrases
+                    num_return_sequences=1,
                 )
-            generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+            generated_text = tokenizer.decode(
+                output[0], skip_special_tokens=True
+            )
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
-            del input_ids, output, attention_mask  # Clear variables from memory
+            del input_ids, output, attention_mask  # free memory
             return generated_text
-        
+
         except torch.cuda.TimeoutError:
             logger.warning("Generation timed out.")
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
             return "No response due to timeout."
+
 
 
 
