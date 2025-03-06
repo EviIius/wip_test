@@ -1,5 +1,14 @@
-QAQC relies on guidelines and internal documents to ensure accuracy.
-Without clear documentation, results may be inconsistent across different formats and use cases.
-System prompts help but may miss key details, especially for model validation.
-QAQC works best with human review or retrieval-augmented generation (RAG).
-Even a simple file upload can improve accuracy and performance.
+QAQC stands for Quality Assurance (QA) and Quality Control (QC), a systematic process to ensure products and services meet quality standards.
+
+Quality Assurance (QA)
+Focuses on audits, training, and documentation to ensure consistency and reliability.
+Quality Control (QC)
+Detects and corrects defects through testing, inspections, and verification before or after delivery.
+Why is QAQC Important?
+Maintains safety, efficiency, and regulatory compliance across industries.
+Challenges Without Supplementary Information
+QAQC relies on internal guidelines for accuracy.
+Lack of documentation causes inconsistent results across formats and use cases.
+System prompts may miss key details, especially in model validation.
+Human review or AI-assisted tools (RAG) improve accuracy.
+Simple file uploads can enhance performance.
