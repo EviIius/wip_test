@@ -1,13 +1,8 @@
-Llama 3: Straightforward baseline, lacks breakdowns and nuanced explanations
-The Central Analytics Support & Enablement (CASE) platform serves over 20,000 data professionals, offering features like the intent-driven chatbot CASEY, the Collective Intelligence framework, conditional ticketing, and MS Graph–enabled search. This unified platform enables product and support teams to efficiently address customer needs, manage documentation, and handle inquiries.
+Llama 3: Basic, keeps the main info while omitting some details
+The Central Analytics Support & Enablement (CASE) platform is a support system for data scientists, analysts, and other professionals at a bank. It features a chatbot called CASEY, a conditional ticketing system, and a search function powered by Microsoft Graph. The platform aims to help product and support teams efficiently address customer needs and manage product knowledge documentation.
 
-Llama 3.1: Expanded and integrated descriptions with clear distinctions
-Our enterprise support platform, Central Analytics Support & Enablement (CASE), serves over 20,000 data professionals, including data scientists, analysts, and developers. CASE features a chatbot, “CASEY,” powered by MS Copilot Studio, as well as the Collective Intelligence framework, a conditional ticketing system, and MS Graph–enabled search. This integrated platform enables product and support teams to efficiently manage customer needs, document product knowledge, and respond to inquiries in a unified environment.
+Llama 3.1: Slightly more detailed, word choice and structure is better
+The Central Analytics Support & Enablement (CASE) platform is a support system for 20,000+ data professionals at the bank. It features a chatbot named CASEY, the Collective Intelligence framework, a conditional ticketing system, and MS Graph–enabled search. This unified platform helps product and support teams efficiently address customer needs and manage product knowledge.
 
-Llama 3.2: Organized into structured format, making it more engaging
-The Central Analytics Support & Enablement (CASE) platform serves over 20,000 data professionals, providing a unified solution for product and support teams. Key features include:
-
-CASEY, a non-Gen AI chatbot built on MS Copilot Studio
-The Collective Intelligence (CI) framework
-A conditional ticketing system
-MS Graph–enabled search
+Llama 3.2: Similar to 3.1 but more condensed, less wordy but has removed tools like MS Graph
+CASE (Central Analytics Support & Enablement) is a platform for 20,000+ data professionals at a bank, providing features such as a chatbot (CASEY), the Collective Intelligence framework, conditional ticketing, and search capabilities, to efficiently manage customer needs and product inquiries.
