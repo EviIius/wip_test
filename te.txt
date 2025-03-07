@@ -1,14 +1,12 @@
-QAQC stands for Quality Assurance (QA) and Quality Control (QC), a systematic process to ensure products and services meet quality standards.
+Llama 3: Keeps main intent, switches some word structure.
+Our bank’s Central Analytics Support & Enablement (CASE) platform provides support to over 20,000 data scientists, analysts, engineers, and developers. This platform features a chatbot called CASEY, which is an intent-driven microservice built on Microsoft Copilot Studio. CASE also includes the Collective Intelligence framework, a conditional ticketing system, and a search function powered by Microsoft Graph. With these tools, product and support teams can effectively respond to customer needs, manage product documentation, and handle inquiries within a single platform.
 
-Quality Assurance (QA)
-Focuses on audits, training, and documentation to ensure consistency and reliability.
-Quality Control (QC)
-Detects and corrects defects through testing, inspections, and verification before or after delivery.
-Why is QAQC Important?
-Maintains safety, efficiency, and regulatory compliance across industries.
-Challenges Without Supplementary Information
-QAQC relies on internal guidelines for accuracy.
-Lack of documentation causes inconsistent results across formats and use cases.
-System prompts may miss key details, especially in model validation.
-Human review or AI-assisted tools (RAG) improve accuracy.
-Simple file uploads can enhance performance.
+Llama 3.1: Provides a detailed technical overview and the scope.
+Our company’s enterprise support platform, Central Analytics Support & Enablement (CASE), serves over 20,000 professionals, including data scientists, data analysts, MLOps engineers, and BI developers. CASE features a range of tools, including CASEY, a chatbot powered by MS Copilot Studio, which uses intent-driven technology rather than general or large language models.
+
+The platform also incorporates the Collective Intelligence framework, a conditional ticketing system, and MS Graph–enabled search functionality.
+
+This comprehensive platform allows product and support teams to effectively address customer needs, manage product documentation, and handle inquiries in a centralized environment.
+
+Llama 3.2: Streamlined for readability but could benefit on more detail.
+The Central Analytics Support & Enablement (CASE) platform serves as the primary support system for over 20,000 employees across various roles, including data scientists, analysts, and engineers. This platform offers a range of features, including the CASEY chatbot, a custom-built, intent-driven conversational AI tool powered by Microsoft Copilot Studio. Additionally, CASE incorporates the Collective Intelligence framework, a ticketing system, and a search function linked to Microsoft Graph, allowing product and support teams to streamline their workflow, access product knowledge, and address customer inquiries in a single, unified environment.
