@@ -1,8 +1,20 @@
-Llama 3: Basic, keeps the main info while omitting some details
-The Central Analytics Support & Enablement (CASE) platform is a support system for data scientists, analysts, and other professionals at a bank. It features a chatbot called CASEY, a conditional ticketing system, and a search function powered by Microsoft Graph. The platform aims to help product and support teams efficiently address customer needs and manage product knowledge documentation.
+Llama 3.1: Added more descriptive attributes to give a deeper reasoning
+Summary:
+The Central Analytics Support & Enablement (CASE) platform is a comprehensive support system for the bank’s 20,000+ data professionals, including data scientists, analysts, and developers. The platform features:
 
-Llama 3.1: Slightly more detailed, word choice and structure is better
-The Central Analytics Support & Enablement (CASE) platform is a support system for 20,000+ data professionals at the bank. It features a chatbot named CASEY, the Collective Intelligence framework, a conditional ticketing system, and MS Graph–enabled search. This unified platform helps product and support teams efficiently address customer needs and manage product knowledge.
+CASEY: an intent-driven chatbot microservice built on Microsoft Copilot Studio.
+Collective Intelligence (CI) framework: a knowledge management system.
+Conditional ticketing system: for efficient issue management.
+MS Graph–enabled search: for unified search functionality.
+Strategic Recommendations:
 
-Llama 3.2: Similar to 3.1 but more condensed, less wordy but has removed tools like MS Graph
-CASE (Central Analytics Support & Enablement) is a platform for 20,000+ data professionals at a bank, providing features such as a chatbot (CASEY), the Collective Intelligence framework, conditional ticketing, and search capabilities, to efficiently manage customer needs and product inquiries.
+Integrate CASE with existing systems: To maximize the platform’s potential, integrate CASE with other internal systems to ensure seamless data flow and minimize manual data entry.
+Continuously monitor and evaluate CASE’s performance: Regularly assess its effectiveness in addressing customer needs and identify areas for improvement.
+Provide training and support: Offer training and support to data professionals so they can effectively utilize the CASE platform and its features.
+Expand CASE’s capabilities: Consider incorporating additional features, such as chatbots or machine learning algorithms, to enhance the platform’s capabilities.
+Key Challenges:
+
+User adoption: Encourage data professionals to adopt the CASE platform and its features, which may require significant changes to their workflows.
+Data quality and accuracy: Ensure that the data used in the platform is accurate and reliable to prevent errors and misinterpretation.
+Integration complexities: Integrating CASE with existing systems may be time-consuming and require significant resources and expertise.
+Security and data protection: Protect sensitive customer and employee data stored within the CASE platform, adhering to the bank’s security and data protection policies.
