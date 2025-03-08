@@ -1,22 +1,11 @@
-Llama 3: Strategic and Polished
-Paraphrasing: Less words than Mistral but straight to the point.
-Our bank’s Central Analytics Support & Enablement (CASE) platform provides support to over 20,000 data scientists, analysts, engineers, and developers. This platform features a chatbot called CASEY, which is an intent-driven microservice built on Microsoft Copilot Studio. CASE also includes the Collective Intelligence framework, a conditional ticketing system, and a search function powered by Microsoft Graph. With these tools, product and support teams can effectively respond to customer needs, manage product documentation, and handle inquiries within a single platform.
+Summarization: Took the original prompt and slightly shortened it, not really a summarization
+CASE is an enterprise support platform designed for over 20,000 data scientists, data analysts, MLOps engineers, and BI developers at a bank. It offers various features including "CASEY," an intent-driven chatbot microservice built using Microsoft Copilot Studio, the Collective Intelligence (CI) framework, a conditional ticketing system, and MS Graph-enabled search. These features allow product and support teams to effectively address customer needs, manage product knowledge documentation, and handle product inquiries within a single platform.
 
-Summarization: Similar to paraphrasing but with less, a decent summarization that is more readable than Mistral.
-The Central Analytics Support & Enablement (CASE) platform is a support system for data scientists, analysts, and other professionals at a bank. It features a chatbot called CASEY, a conditional ticketing system, and a search function powered by Microsoft Graph. The platform aims to help product and support teams efficiently address customer needs and manage product knowledge documentation.
+Grammar Checking: Gave a list rather than a corrected version of text, along with its thoughts.
+The input text appears to be grammatically correct. However, there are a few suggestions for improvement:
 
-Grammar Checking: Gave multiple suggestions on the style and tone, with bullets and headers of the type of change that should be made.
-
-Grammar and Spelling:
-The text appears to be free of major grammar and spelling errors.
-However, there are a few minor issues:
-The sentence "CASE includes multiple features such as CASEY the chatbot, an intent-driven (i.e., non-Gen AI/non-LLM) chatbot microservice built on MS Copilot Studio," is a bit long and could be broken up for better readability.
-The sentence "All of this enables product and support teams to efficiently address customer needs, manage their product knowledge documentation, and handle product inquiries within a unified platform," is also a bit long and could be broken up for better readability.
-Style and Clarity:
-The text is clear and concise, making it easy to understand the features and benefits of the CASE platform.
-The use of technical terms such as "MLOps engineers" and "MS Graph-enabled search" may make the text less accessible to non-technical readers.
-The text could benefit from a brief summary or overview of the CASE platform at the beginning to provide context for the reader.
-Suggestions:
-Consider breaking up long sentences into shorter, more manageable ones to improve readability.
-Consider adding a brief summary or overview of the CASE platform at the beginning to provide context for the reader.
-Consider using simpler language or providing definitions for technical terms to make the text more accessible to non-technical readers.
+In the first sentence, consider using "enterprise support platform" instead of just "platform". This will make it clearer what type of platform you are referring to.
+In the second sentence, consider rephrasing "a microservice built on MS Copilot Studio" to "a microservice built with Microsoft Copilot Studio." This will make it clearer how the microservice was built.
+In the third sentence, consider replacing "product and support teams" with "support teams" to make it clear who is responsible for managing the platform.
+In the fourth sentence, add a comma after "Collective Intelligence (CI)" to separate it from the rest of the sentence.
+In the last sentence, consider replacing "handle product inquiries" with "manage customer inquiries" to make it clear what the platform is designed to do.
