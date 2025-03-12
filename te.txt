@@ -1,20 +1,7 @@
-The Central Analytics Support & Enablement (CASE) platform serves over 20,000 data professionals, providing a unified solution for product and support teams. Key features include:
-CASEY, a non-Gen AI chatbot built on MS Copilot Studio
-The Collective Intelligence (CI) framework
-A conditional ticketing system
-MS Graph-enabled search
-These features enable seamless collaboration, efficient issue management, and streamlined customer support within a single platform.
+Our models are evaluated based on the following key considerations:
 
-Central Analytics Support & Enablement (CASE) is our enterprise-level support platform, serving over 20,000 data scientists, data analysts, MLOps engineers, BI developers, and other stakeholders across the bank.
-
-CASE offers a comprehensive suite of features, including “CASEY,” a chatbot microservice built on Microsoft Copilot Studio, designed to utilize intent-driven, non-General AI/LLM capabilities. Furthermore, the platform incorporates the Collective Intelligence (CI) framework, a conditional ticketing system, and MS Graph-enabled search capabilities.
-
-These features enable product and support teams to effectively address customer needs, manage product knowledge documentation, and handle product inquiries within a unified platform, thereby enhancing collaboration and efficiency across the organization.
-
-Changes made:
-Changed "our enterprise support platform for the ~20K+ data scientists" to "our enterprise-level support platform, serving over 20,000 data scientists" for better clarity and professionalism.
-Added "stakeholders" to the list of users to make it more inclusive.
-Changed "includes multiple features" to "offers a comprehensive suite of features" for a more formal tone.
-Added "designed to utilize intent-driven, non-General AI/LLM capabilities" to provide more context about the chatbot’s functionality.
-Changed "Additionally" to "Furthermore" to connect the additional feature to the previous sentence more smoothly.
-Changed "handle product inquiries within a unified platform" to "handle product inquiries within a unified platform, thereby enhancing collaboration and efficiency across the organization" to add more context and emphasize the benefits of the platform.
+Generation Structure – Assessing the coherence and logical flow of outputs.
+Interpretability & Explainability – Ensuring clarity in model decision-making when given specific context.
+Computational Efficiency & Latency – Optimizing resource usage and response time based on token requirements.
+Task-Specific vs. General Purpose Performance – Comparing specialized model outputs to broader, general-use responses.
+Additionally, while bias and toxicity are areas of concern, their impact is more challenging to assess in a strictly technical summarization context.
