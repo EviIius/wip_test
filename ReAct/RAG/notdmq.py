@@ -13,7 +13,8 @@ import torch
 
 # Logging Configuration
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"")
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # LLaMA 2 Model Configuration
@@ -66,38 +67,6 @@ def get_embeddings_batch(texts: List[str], batch_size: int = 50) -> List[List[fl
         embeddings.extend(batch_embeddings)
     return embeddings
 
-def get_completion(messages: str, max_tokens: int = 1000, temperature: float = 0.7, timeout: int = 30) -> str:
-    """Get completion with proper attention mask and GPU termination."""
-    input_data = tokenizer(messages, return_tensors="pt", padding=True, truncation=True)
-    input_ids = input_data.input_ids.to(device)
-    attention_mask = input_data.attention_mask.to(device)
-    
-    with torch.no_grad():
-        try:
-            with torch.amp.autocast('cuda'):
-                output = completion_model.generate(
-                    input_ids,
-                    attention_mask=attention_mask,  # Explicitly set attention mask
-                    max_length=input_ids.shape[1] + max_tokens,
-                    temperature=temperature,
-                    do_sample=True,
-                    top_k=50,
-                    top_p=0.95,
-                    pad_token_id=tokenizer.eos_token_id,
-                    num_return_sequences=1
-                )
-            generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-            torch.cuda.empty_cache()
-            torch.cuda.synchronize()
-            del input_ids, output, attention_mask  # Clear variables from memory
-            return generated_text
-        
-        except torch.cuda.TimeoutError:
-            logger.warning("Generation timed out.")
-            torch.cuda.empty_cache()
-            torch.cuda.synchronize()
-            return "No response due to timeout."
-
 # Document Class
 @dataclass
 class Document:
@@ -111,7 +80,7 @@ class DocumentProcessor:
         text = re.sub(r"\.{2,}", "", text)
         text = re.sub(r"\s*\u2002\s*", " ", text)
         text = re.sub(r"\s+", " ", text)
-        
+
         lines = []
         for line in text.split("\n"):
             line = line.strip()
@@ -134,13 +103,10 @@ class DocumentProcessor:
             for page_num, page in enumerate(reader.pages, 1):
                 page_text = page.extract_text()
                 text += f"\n=== Page {page_num} ===\n{page_text}"
-        print("Cleaning extracted text...")
         return DocumentProcessor.clean_text(text)
 
     @staticmethod
-    def chunk_text(
-        text: str, chunk_size: int = 1000, chunk_overlap: int = 200
-    ) -> List[Document]:
+    def chunk_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[Document]:
         separators = ["\n=== Page", "\n\n", "\n", ". ", "? ", "! "]
 
         splitter = RecursiveCharacterTextSplitter(
@@ -150,7 +116,7 @@ class DocumentProcessor:
             length_function=len,
             is_separator_regex=False,
         )
-        
+
         chunks = splitter.split_text(text)
         processed_chunks = []
         
@@ -159,5 +125,64 @@ class DocumentProcessor:
             if chunk.strip():
                 processed_chunks.append(Document(content=chunk))
         
-        print(f"Final number of chunks: {len(processed_chunks)}")
         return processed_chunks
+
+class VectorStore:
+    def __init__(self, persist_directory: str = "rag_index"):
+        self.index = None
+        self.documents = []
+        self.persist_directory = persist_directory
+        os.makedirs(persist_directory, exist_ok=True)
+
+    def create_index(self, documents: List[Document]):
+        self.documents = documents
+        contents = [doc.content for doc in documents]
+        embeddings = get_embeddings_batch(contents)
+
+        embedding_dim = len(embeddings[0])
+        self.index = faiss.IndexFlatL2(embedding_dim)
+        self.index.add(np.array(embeddings).astype("float32"))
+
+    def search(self, query: str, k: int = 3) -> List[Tuple[Document, float]]:
+        query_embedding = get_embedding(query)
+        distances, indices = self.index.search(
+            np.array([query_embedding]).astype("float32"), k
+        )
+        similarities = 1 / (1 + distances)
+        return [
+            (self.documents[i], similarities[0][idx])
+            for idx, i in enumerate(indices[0])
+        ]
+
+class HybridSearcher:
+    def __init__(self, persist_directory: str = "rag_index"):
+        self.vectorizer = TfidfVectorizer()
+        self.tfidf_matrix = None
+        self.vector_store = VectorStore(persist_directory)
+
+    def create_index(self, documents: List[Document]):
+        self.documents = documents
+        self._initialize_tfidf()
+        self.vector_store.create_index(documents)
+
+    def _initialize_tfidf(self):
+        contents = [doc.content for doc in self.documents]
+        self.tfidf_matrix = self.vectorizer.fit_transform(contents)
+
+    def search(self, query: str, k: int = 3) -> List[Tuple[Document, float]]:
+        vector_results = self.vector_store.search(query, k)
+        query_vec = self.vectorizer.transform([query])
+        keyword_scores = cosine_similarity(query_vec, self.tfidf_matrix)[0]
+        keyword_indices = np.argsort(keyword_scores)[-k:][::-1]
+        keyword_results = [
+            (self.documents[i], keyword_scores[i]) for i in keyword_indices
+        ]
+
+        seen = set()
+        combined_results = []
+        for doc, score in vector_results + keyword_results:
+            if doc.content not in seen:
+                seen.add(doc.content)
+                combined_results.append((doc, score))
+
+        return sorted(combined_results, key=lambda x: x[1], reverse=True)[:k]
