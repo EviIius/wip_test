@@ -59,13 +59,45 @@ def get_embedding(text: str) -> List[float]:
 
 # Get Batch Embeddings
 def get_embeddings_batch(texts: List[str], batch_size: int = 50) -> List[List[float]]:
-    """Get embeddings for multiple texts."""
+    """Get embeddings for multiple texts with LLaMA 2"""
     embeddings = []
     for i in range(0, len(texts), batch_size):
         batch = texts[i : i + batch_size]
         batch_embeddings = [get_embedding(text) for text in batch]
         embeddings.extend(batch_embeddings)
     return embeddings
+
+def get_completion(messages: str, max_tokens: int = 1000, temperature: float = 0.7, timeout: int = 30) -> str:
+    """Get completion with proper attention mask and GPU termination"""
+    input_data = tokenizer(messages, return_tensors="pt", padding=True, truncation=True)
+    input_ids = input_data.input_ids.to(device)
+    attention_mask = input_data.attention_mask.to(device)
+    
+    with torch.no_grad():
+        try:
+            with torch.amp.autocast('cuda'):
+                output = completion_model.generate(
+                    input_ids,
+                    attention_mask=attention_mask,  # Explicitly set attention mask
+                    max_length=input_ids.shape[1] + max_tokens,
+                    temperature=temperature,
+                    do_sample=True,
+                    top_k=50,
+                    top_p=0.95,
+                    pad_token_id=tokenizer.eos_token_id,
+                    num_return_sequences=1
+                )
+            generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            del input_ids, output, attention_mask  # Clear variables from memory
+            return generated_text
+        
+        except torch.cuda.TimeoutError:
+            logger.warning("Generation timed out.")
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+            return "No response due to timeout."
 
 # Document Class
 @dataclass
@@ -100,15 +132,18 @@ class DocumentProcessor:
         text = ""
         with open(file_path, "rb") as file:
             reader = PdfReader(file)
+            total_pages = len(reader.pages)
             for page_num, page in enumerate(reader.pages, 1):
                 page_text = page.extract_text()
                 text += f"\n=== Page {page_num} ===\n{page_text}"
+        print("Cleaning extracted text...")
         return DocumentProcessor.clean_text(text)
 
     @staticmethod
-    def chunk_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[Document]:
+    def chunk_text(
+        text: str, chunk_size: int = 1000, chunk_overlap: int = 200
+    ) -> List[Document]:
         separators = ["\n=== Page", "\n\n", "\n", ". ", "? ", "! "]
-
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -116,15 +151,22 @@ class DocumentProcessor:
             length_function=len,
             is_separator_regex=False,
         )
-
         chunks = splitter.split_text(text)
         processed_chunks = []
-        
         for chunk in chunks:
             chunk = DocumentProcessor.clean_text(chunk)
+            if not chunk.startswith("=== Page"):
+                sentence_boundaries = [". ", "? ", "! "]
+                first_boundary = float("inf")
+                for boundary in sentence_boundaries:
+                    pos = chunk.find(boundary)
+                    if pos != -1 and pos < first_boundary:
+                        first_boundary = pos
+                if first_boundary < 100 and first_boundary != float("inf"):
+                    chunk = chunk[first_boundary + 2 :]
             if chunk.strip():
                 processed_chunks.append(Document(content=chunk))
-        
+        print(f"Final number of chunks: {len(processed_chunks)}")
         return processed_chunks
 
 class VectorStore:
@@ -134,25 +176,75 @@ class VectorStore:
         self.persist_directory = persist_directory
         os.makedirs(persist_directory, exist_ok=True)
 
-    def create_index(self, documents: List[Document]):
+    def _get_index_path(self) -> str:
+        return os.path.join(self.persist_directory, "faiss.index")
+
+    def _get_documents_path(self) -> str:
+        return os.path.join(self.persist_directory, "documents.pkl")
+
+    def load_local_index(self) -> bool:
+        index_path = self._get_index_path()
+        documents_path = self._get_documents_path()
+
+        try:
+            if os.path.exists(index_path) and os.path.exists(documents_path):
+                self.index = faiss.read_index(index_path)
+                with open(documents_path, "rb") as f:
+                    self.documents = pickle.load(f)
+                print(f"Loaded existing index with {len(self.documents)} documents")
+                return True
+        except Exception as e:
+            print(f"Error loading index: {e}")
+            self.index = None
+            self.documents = []
+
+        return False
+
+    def save_local_index(self):
+        if self.index is None or not self.documents:
+            return
+        try:
+            faiss.write_index(self.index, self._get_index_path())
+            with open(self._get_documents_path(), "wb") as f:
+                pickle.dump(self.documents, f)
+            print(f"Saved index with {len(self.documents)} documents")
+        except Exception as e:
+            print(f"Error saving index: {e}")
+
+    def create_index(self, documents: List[Document], force_recreate: bool = False):
+        if not force_recreate and self.load_local_index():
+            return
+
+        print("Creating new index...")
         self.documents = documents
         contents = [doc.content for doc in documents]
         embeddings = get_embeddings_batch(contents)
 
         embedding_dim = len(embeddings[0])
+        # Use IndexFlatL2 instead of IndexFlatIP
         self.index = faiss.IndexFlatL2(embedding_dim)
         self.index.add(np.array(embeddings).astype("float32"))
 
+        self.save_local_index()
+
     def search(self, query: str, k: int = 3) -> List[Tuple[Document, float]]:
+        """Search for similar documents"""
+        if self.index is None:
+            raise ValueError("Index not initialized. Call create_index first.")
+
         query_embedding = get_embedding(query)
         distances, indices = self.index.search(
             np.array([query_embedding]).astype("float32"), k
         )
+
+        # Convert distances to similarity scores
         similarities = 1 / (1 + distances)
+
         return [
             (self.documents[i], similarities[0][idx])
             for idx, i in enumerate(indices[0])
         ]
+
 
 class HybridSearcher:
     def __init__(self, persist_directory: str = "rag_index"):
@@ -162,15 +254,28 @@ class HybridSearcher:
 
     def create_index(self, documents: List[Document]):
         self.documents = documents
+        # Initialize TF-IDF
         self._initialize_tfidf()
+
+        # Initialize vector store
         self.vector_store.create_index(documents)
 
     def _initialize_tfidf(self):
+        """Initialize TF-IDF matrix"""
         contents = [doc.content for doc in self.documents]
         self.tfidf_matrix = self.vectorizer.fit_transform(contents)
 
+        # Optionally save TF-IDF data
+        tfidf_path = os.path.join(self.vector_store.persist_directory, "tfidf.pkl")
+        with open(tfidf_path, "wb") as f:
+            pickle.dump({"vectorizer": self.vectorizer, "matrix": self.tfidf_matrix}, f)
+
     def search(self, query: str, k: int = 3) -> List[Tuple[Document, float]]:
+        """Hybrid search combining vector and keyword search"""
+        # Get vector search results
         vector_results = self.vector_store.search(query, k)
+
+        # Get keyword search results
         query_vec = self.vectorizer.transform([query])
         keyword_scores = cosine_similarity(query_vec, self.tfidf_matrix)[0]
         keyword_indices = np.argsort(keyword_scores)[-k:][::-1]
@@ -178,6 +283,7 @@ class HybridSearcher:
             (self.documents[i], keyword_scores[i]) for i in keyword_indices
         ]
 
+        # Combine and deduplicate
         seen = set()
         combined_results = []
         for doc, score in vector_results + keyword_results:
