@@ -1,5 +1,5 @@
-Developed a system for chunking data from multiple documents to enhance the reference materials for a Large Language Model (LLM).
-The project was motivated by challenges related to environmental impact in online compute platforms.
-Enables the model to search a document database to retrieve relevant information for generating responses.
-Designed to integrate with Hugging Face's chat template, utilizing relevance scoring to determine the most accurate text source for responses.
-The next phase of this project would involve implementing ReAct (Reason + Action) prompting, if time permitted.
+Two versions of the PowerPoint were created:
+Technical Version: Focuses on in-depth details, including specific benchmarks and side-by-side comparisons of models. – [Click]
+Condensed Version: A streamlined 1-hour presentation summarizing key insights. – [Click]
+Both versions highlight output differences not visible in the prompt hub, while incorporating publicly available information on pretraining and benchmark comparisons with other models.
+This presentation is crucial for helping users decide which model to select for initial testing and evaluating potential alternatives.
