@@ -1,5 +1,3 @@
-Developed a system to chunk data from multiple documents, improving reference materials for Large Language Models (LLMs).
-Motivated by challenges in environmental impact and package issues within the CoPRA compute cluster.
-Enables document retrieval, allowing the model to search databases for relevant information to generate responses.
-Integrated with Hugging Face’s chat template, using relevance scoring to identify the most accurate text sources.
-Future work: Implementing ReAct (Reason + Action) prompting, if time allows.
+Created a consolidated guide outlining best practices for prompting Large Language Models (LLMs), with color-coded performance indicators for different prompt types.
+Included various tested techniques such as Zero-shot, Few-shot, and Chain-of-Thought (CoT), which performed effectively.
+Serves as a reference guide for coworkers, providing a starting point for selecting and working with different models.
