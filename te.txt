@@ -1,4 +1,3 @@
-Understanding Model Utilization: Gained insight into the number of models developed and deployed across various business sectors.
-Enterprise AI Strategy: Observed how a major corporation like Wells Fargo is integrating generative AI as part of its long-term vision.
-Communication & Organization: Strengthened communication skills and organizational abilities through weekly mentorship meetings.
-Generative AI & Validation: Developed a deeper understanding of generative AI and the time required for model validation.
+Additional Tasks:
+Managed and updated the GenAI/LLM model inventory sheet on a monthly basis, following the Model Identification Templates (MIT) framework.
+Reviewed and corrected errors in MUT documents to support the Minerva conversion process.
