@@ -1,7 +1,5 @@
-Our models are evaluated based on the following key considerations:
-
-Generation Structure – Assessing the coherence and logical flow of outputs.
-Interpretability & Explainability – Ensuring clarity in model decision-making when given specific context.
-Computational Efficiency & Latency – Optimizing resource usage and response time based on token requirements.
-Task-Specific vs. General Purpose Performance – Comparing specialized model outputs to broader, general-use responses.
-Additionally, while bias and toxicity are areas of concern, their impact is more challenging to assess in a strictly technical summarization context.
+Developed a system for chunking data from multiple documents to enhance the reference materials for a Large Language Model (LLM).
+The project was motivated by challenges related to environmental impact in online compute platforms.
+Enables the model to search a document database to retrieve relevant information for generating responses.
+Designed to integrate with Hugging Face's chat template, utilizing relevance scoring to determine the most accurate text source for responses.
+The next phase of this project would involve implementing ReAct (Reason + Action) prompting, if time permitted.
