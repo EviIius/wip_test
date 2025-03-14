@@ -1,5 +1,4 @@
-Two versions of the PowerPoint were created:
-Technical Version: Focuses on in-depth details, including specific benchmarks and side-by-side comparisons of models. – [Click]
-Condensed Version: A streamlined 1-hour presentation summarizing key insights. – [Click]
-Both versions highlight output differences not visible in the prompt hub, while incorporating publicly available information on pretraining and benchmark comparisons with other models.
-This presentation is crucial for helping users decide which model to select for initial testing and evaluating potential alternatives.
+Developed a consolidated sheet containing best practices for prompting multiple Large Language Models (LLMs).
+Implemented color coding to indicate which models produced the most refined outputs for different prompt types.
+Included a variety of tested prompting techniques (e.g., Zero-shot, Few-shot, Chain-of-Thought (CoT)) that performed effectively.
+Designed as a reference guide for coworkers, providing a starting point for selecting and working with different models.
