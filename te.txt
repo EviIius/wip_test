@@ -1,4 +1,5 @@
-Technical Version: Detailed analysis of benchmarks and side-by-side model comparisons. – [Click]
-Condensed Version: A streamlined 1-hour summary of key insights. – [Click]
-Presented findings on open-source model outputs to the AToM team.
-Purpose: Helps users select models for initial testing and explore alternative options.
+Developed a system to chunk data from multiple documents, improving reference materials for Large Language Models (LLMs).
+Motivated by challenges in environmental impact and package issues within the CoPRA compute cluster.
+Enables document retrieval, allowing the model to search databases for relevant information to generate responses.
+Integrated with Hugging Face’s chat template, using relevance scoring to identify the most accurate text sources.
+Future work: Implementing ReAct (Reason + Action) prompting, if time allows.
