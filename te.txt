@@ -1,4 +1,4 @@
-Developed a consolidated sheet containing best practices for prompting multiple Large Language Models (LLMs).
-Implemented color coding to indicate which models produced the most refined outputs for different prompt types.
-Included a variety of tested prompting techniques (e.g., Zero-shot, Few-shot, Chain-of-Thought (CoT)) that performed effectively.
-Designed as a reference guide for coworkers, providing a starting point for selecting and working with different models.
+Understanding Model Utilization: Gained insight into the number of models developed and deployed across various business sectors.
+Enterprise AI Strategy: Observed how a major corporation like Wells Fargo is integrating generative AI as part of its long-term vision.
+Communication & Organization: Strengthened communication skills and organizational abilities through weekly mentorship meetings.
+Generative AI & Validation: Developed a deeper understanding of generative AI and the time required for model validation.
