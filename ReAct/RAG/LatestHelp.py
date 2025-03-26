@@ -1,4 +1,7 @@
-import os, json, re, pickle
+import os
+import json
+import re
+import pickle
 from typing import List, Dict, Any, Tuple
 from dataclasses import dataclass
 from PyPDF2 import PdfReader
@@ -11,6 +14,7 @@ from tqdm.notebook import tqdm
 import logging
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 import torch
+import pandas as pd  # for CSV reading
 
 # Logging Configuration
 logging.basicConfig(
@@ -22,10 +26,8 @@ logger = logging.getLogger(__name__)
 LLAMA_MODEL_NAME = "meta-llama/Llama-2-7b-chat-hf"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load Tokenizer and Model
 logger.info("Loading tokenizer and models...")
 tokenizer = AutoTokenizer.from_pretrained(LLAMA_MODEL_NAME)
-
 # Fix: Set pad_token as eos_token
 tokenizer.pad_token = tokenizer.eos_token
 
@@ -36,19 +38,17 @@ embedding_model = AutoModelForCausalLM.from_pretrained(
     load_in_8bit=True, 
     torch_dtype=torch.float16,
 )
-
 completion_model = AutoModelForCausalLM.from_pretrained(
     LLAMA_MODEL_NAME,
     device_map="auto",
     load_in_8bit=True,
     torch_dtype=torch.float16,
 )
-
 logger.info("LLaMA 2 model loaded successfully.")
 
-# Get Embedding Function (Updated)
+
 def get_embedding(text: str) -> List[float]:
-    """Get normalized embeddings using LLaMA 2 model"""
+    """Get normalized embeddings using LLaMA 2 model."""
     inputs = tokenizer(text, return_tensors="pt").to(device)
     with torch.no_grad():
         outputs = embedding_model(**inputs, output_hidden_states=True)
@@ -59,8 +59,6 @@ def get_embedding(text: str) -> List[float]:
     return embedding
 
 
-
-# Get Batch Embeddings
 def get_embeddings_batch(texts: List[str], batch_size: int = 50) -> List[List[float]]:
     """Get embeddings for multiple texts."""
     embeddings = []
@@ -119,24 +117,19 @@ def get_completion(
             return "No response due to timeout."
 
 
-
-
-
-# Document Class
 @dataclass
 class Document:
     content: str
     metadata: Dict[str, Any] = None
 
 
-# Document Processor
 class DocumentProcessor:
     @staticmethod
     def clean_text(text: str) -> str:
         text = re.sub(r"\.{2,}", "", text)
         text = re.sub(r"\s*\u2002\s*", " ", text)
         text = re.sub(r"\s+", " ", text)
-        
+
         lines = []
         for line in text.split("\n"):
             line = line.strip()
@@ -163,9 +156,25 @@ class DocumentProcessor:
         return DocumentProcessor.clean_text(text)
 
     @staticmethod
-    def chunk_text(
-        text: str, chunk_size: int = 1000, chunk_overlap: int = 200
-    ) -> List[Document]:
+    def load_txt(file_path: str) -> str:
+        """Simply read text from a .txt file."""
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        print("Cleaning extracted text (TXT)...")
+        return DocumentProcessor.clean_text(text)
+
+    @staticmethod
+    def load_csv(file_path: str) -> str:
+        """Load CSV and convert to a readable text. 
+           This is a simple approach converting CSV contents into a text blob."""
+        df = pd.read_csv(file_path, dtype=str)  # read everything as string
+        # Convert entire dataframe to a string
+        text = df.to_string(index=False)
+        print("Cleaning extracted text (CSV)...")
+        return DocumentProcessor.clean_text(text)
+
+    @staticmethod
+    def chunk_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[Document]:
         separators = ["\n=== Page", "\n\n", "\n", ". ", "? ", "! "]
 
         splitter = RecursiveCharacterTextSplitter(
@@ -187,6 +196,25 @@ class DocumentProcessor:
         print(f"Final number of chunks: {len(processed_chunks)}")
         return processed_chunks
 
+
+def load_file(file_path: str) -> List[Document]:
+    """
+    Load a file (PDF, TXT, or CSV), clean the text, and chunk it into Document objects.
+    """
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext == ".pdf":
+        text = DocumentProcessor.load_pdf(file_path)
+    elif ext == ".txt":
+        text = DocumentProcessor.load_txt(file_path)
+    elif ext == ".csv":
+        text = DocumentProcessor.load_csv(file_path)
+    else:
+        raise ValueError(f"Unsupported file format: {ext}")
+
+    # Chunk the text
+    documents = DocumentProcessor.chunk_text(text)
+    return documents
 
 
 class VectorStore:
@@ -241,7 +269,6 @@ class VectorStore:
         embeddings = get_embeddings_batch(contents)
 
         embedding_dim = len(embeddings[0])
-        # Use IndexFlatL2 instead of IndexFlatIP
         self.index = faiss.IndexFlatL2(embedding_dim)
         self.index.add(np.array(embeddings).astype("float32"))
 
@@ -256,7 +283,6 @@ class VectorStore:
         distances, indices = self.index.search(
             np.array([query_embedding]).astype("float32"), k
         )
-
         # Convert distances to similarity scores
         similarities = 1 / (1 + distances)
 
@@ -291,11 +317,11 @@ class HybridSearcher:
             pickle.dump({"vectorizer": self.vectorizer, "matrix": self.tfidf_matrix}, f)
 
     def search(self, query: str, k: int = 3) -> List[Tuple[Document, float]]:
-        """Hybrid search combining vector and keyword search"""
-        # Get vector search results
+        """Hybrid search combining vector and keyword search."""
+        # Vector search results
         vector_results = self.vector_store.search(query, k)
 
-        # Get keyword search results
+        # Keyword (TF-IDF) search
         query_vec = self.vectorizer.transform([query])
         keyword_scores = cosine_similarity(query_vec, self.tfidf_matrix)[0]
         keyword_indices = np.argsort(keyword_scores)[-k:][::-1]
@@ -311,4 +337,20 @@ class HybridSearcher:
                 seen.add(doc.content)
                 combined_results.append((doc, score))
 
+        # Sort by score descending and return top k
         return sorted(combined_results, key=lambda x: x[1], reverse=True)[:k]
+
+
+def load_documents(file_path):
+    """
+    Load a file (PDF, TXT, or CSV) into Documents, then create a new VectorStore index.
+    """
+    # Load and chunk document
+    documents = load_file(file_path)
+    
+    # Create and return vector store
+    vector_store = VectorStore()  # or HybridSearcher() if you want both vector + keyword
+    vector_store.create_index(documents, force_recreate=True)
+    print(f"Processed {len(documents)} chunks from file: {file_path}")
+    
+    return vector_store
