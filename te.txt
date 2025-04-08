@@ -1,3 +1,7 @@
-Created a consolidated guide outlining best practices for prompting Large Language Models (LLMs), with color-coded performance indicators for different prompt types.
-Included various tested techniques such as Zero-shot, Few-shot, and Chain-of-Thought (CoT), which performed effectively.
-Serves as a reference guide for coworkers, providing a starting point for selecting and working with different models.
+Technique	Boosts What?	Requires Public Data?	Tool Needed?	Difficulty
+Self-Ask + External Search	Reasoning, factuality	✅ Yes	Optional search	🟢 Easy
+ReAct Tool-Augmented Prompting	Interactive reasoning	✅ Yes	Custom tools	🟡 Medium
+Chain-of-Thought Distillation	Math, logic reasoning	✅ Yes (GSM8K, etc.)	Strong LLMs	🟡 Medium
+LIMA-style Few-shot Fine-Tuning	Instruction-following	✅ Yes	LoRA or PEFT	🟢 Easy
+Retrieval-Augmented Generation	Factuality, grounding	✅ Yes	FAISS/BM25	🟡 Medium
+Self-Instruct / Backtranslation	General abilities	✅ Yes	GPT-4 or similar	🟡 Medium
