@@ -1,7 +1,8 @@
-Technique	Boosts What?	Requires Public Data?	Tool Needed?	Difficulty
-Self-Ask + External Search	Reasoning, factuality	✅ Yes	Optional search	🟢 Easy
-ReAct Tool-Augmented Prompting	Interactive reasoning	✅ Yes	Custom tools	🟡 Medium
-Chain-of-Thought Distillation	Math, logic reasoning	✅ Yes (GSM8K, etc.)	Strong LLMs	🟡 Medium
-LIMA-style Few-shot Fine-Tuning	Instruction-following	✅ Yes	LoRA or PEFT	🟢 Easy
-Retrieval-Augmented Generation	Factuality, grounding	✅ Yes	FAISS/BM25	🟡 Medium
-Self-Instruct / Backtranslation	General abilities	✅ Yes	GPT-4 or similar	🟡 Medium
+Technique, Paper, Example
+LIMA, https://arxiv.org/abs/2305.11206, https://huggingface.co/docs/transformers/peft
+SELF-DISCOVER (Self-Improving Prompting), https://arxiv.org/pdf/2402.03620, None
+Distilling Chain-of-Thought (CoT) with Few Examples, https://arxiv.org/abs/2305.02301
+ReAct, https://arxiv.org/abs/2210.03629
+Self-Instruction, https://arxiv.org/abs/2212.10560, https://github.com/yizhongw/self-instruct
+Retrieval-Augmented Generation, https://arxiv.org/abs/2112.04426, https://github.com/deepset-ai/haystack
+Prompt Compression / Prompt Tuning with Low-Rank Adapters (LoRA), https://huggingface.co/docs/peft https://arxiv.org/abs/2305.14314, 
