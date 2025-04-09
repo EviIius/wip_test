@@ -169,6 +169,17 @@ def get_embeddings_batch(texts: List[str], batch_size: int = 32) -> List[List[fl
     return embeddings
 
 
+def truncate_text(text, max_tokens=900):
+    """
+    Truncate text to a maximum number of tokens (simple split by whitespace).
+    This is a rough approximation to avoid exceeding the model's token limit.
+    """
+    tokens = text.split()
+    if len(tokens) > max_tokens:
+        return " ".join(tokens[:max_tokens])
+    return text
+
+
 def get_completion(
     prompt: str,
     max_new_tokens: int = 512,
@@ -197,6 +208,21 @@ def get_completion(
             repetition_penalty=1.2
         )
     return tokenizer.decode(output[0], skip_special_tokens=True)
+
+def get_completion_fixed(prompt, max_new_tokens=512, temperature=0.7):
+    """
+    Use the provided get_completion function (from LatestHelp.py) to get an output,
+    then remove any echo of the prompt. This helps prevent the model from repeating
+    its input instructions.
+    """
+    # Call the original get_completion method.
+    answer = get_completion(prompt, max_new_tokens=max_new_tokens, temperature=temperature)
+    # Remove any echo: If the output includes the prompt (or a part of it),
+    # strip it so that only the answer remains.
+    if "Answer:" in answer:
+        # Split on the last occurrence of "Answer:" and take the part after it.
+        answer = answer.split("Answer:")[-1].strip()
+    return answer
 
 
 # ------------------------------------------------------------------------------
